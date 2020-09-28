@@ -1,0 +1,90 @@
+---
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+GC.df <- read.csv("GermanCredit.csv")
+```
+
+```{r}
+str(GC.df)
+```
+
+```{r}
+head(GC.df)
+```
+
+```{r}
+summary(GC.df)
+```
+
+```{r}
+mean(GC.df$AMOUNT, na.rm=TRUE)
+```
+
+```{r}
+hist(GC.df$AMOUNT, xlab = "Amount loaned")
+```
+# Remove the OBS column from the GC.df dataframe.
+```{r}
+GC1.df <- GC.df[ , -c(1)]
+selected.var <- c(31, 1:30)
+```
+
+# Perform splitting of data into training and validation sets
+```{r}
+
+set.seed(1)
+train.index <- sample(c(1:1000), 600)
+train.rows <- GC1.df[train.index, selected.var]
+valid.rows <- GC1.df[-train.index, selected.var]
+```
+
+# Produce a general linear model to fit a logistic regression
+```{r}
+logit.reg <- glm(RESPONSE ~., data = GC1.df, family = "binomial")
+options(scipen=999)
+summary(logit.reg)
+```
+# Therefore, the predictive equation with the appropriately significant variables is RESPONSE (0 or # 1) = 1.01616697 + 0.56405318 CHK_ACCT -0.02694976 DURATION + 0.40074744 HISTORY -0.00011777  AMOUNT #+ 0.24972304 SAV_ACCT -0.32146856 INSTALL_RATE + 0.54056100 MALE_SINGLE -0.62126405 OTHER_INSTALL.
+
+
+
+# Now we conduct further analysis through attempted predictions.
+```{r}
+logit.reg.pred <- predict(logit.reg, valid.rows[], type = "response")
+```
+
+```{r}
+data.frame(actual = valid.rows$RESPONSE[1:20], predicted = logit.reg.pred[1:20])
+```
+
+# It would appear that the predictive model is only 90% accurate, based on two entries being off in the wrong direction from 0.5 in predicted from the actual value.
+
+# Now, box plots of the six most important variables with regards to the RESPONSE variable are plotted.
+
+```{r}
+par(mfcol = c(1,6))
+boxplot(GC1.df$CHK_ACCT ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "CHK_ACCT")
+boxplot(GC1.df$DURATION ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "DURATION")
+boxplot(GC1.df$HISTORY ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "HISTORY")
+boxplot(GC1.df$SAV_ACCT ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "SAV_ACCT")
+boxplot(GC1.df$INSTALL_RATE ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "INSTALL_RATE")
+boxplot(GC1.df$OTHER_INSTALL ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "OTHER_INSTALL")
+```
+
+# The results indicate that applicants with a 200 or less DMs in their checking accounts are more likely to have bad credit than those who have more than 200 DMs or who do not have a checking account.  Additionally, the duration of the loan provides a strong indicator of whether an applicant's credit rating is bad or not, with longer duration loans having greater chances of bad credit ratings.  Credit history also plays a role; those who have paid off their credits are more likely to have good credit assessment.  The amount of money in the applicant's savings account had a direct affect on the credit assessment; if the applicant had >1000 DM in their account, it was extremely likely that they had a good credit rating assessment.  Furthermore, the installment rate made a difference, with larger installment rates causing more assessments of bad credit rating.  Finally, the presence of other installments greatly affected the credit rating assessment of the applicant.
+
+# Now, we create and plot a classification tree of the German Credit data spreadsheet using evaluation of the response variable.
+```{r}
+library(rpart)
+library(rpart.plot)
+class.tree <- rpart(RESPONSE ~ ., data = GC.df,
+      control = rpart.control(maxdepth = 10), method = "class")
+
+# Plotting of the classification tree below.
+prp(class.tree, type=1, extra=1, split.font=2, varlen=-10)
+```
