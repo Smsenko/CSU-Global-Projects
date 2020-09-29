@@ -1,0 +1,101 @@
+---
+title: "MIS 510 Portfolio Project Option 1"
+author: "Sean Senko"
+date: "11/30/2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+GC.df <- read.csv("GermanCredit.csv")
+```
+
+```{r}
+str(GC.df)
+```
+
+```{r}
+head(GC.df)
+```
+
+```{r}
+summary(GC.df)
+```
+
+```{r}
+mean(GC.df$AMOUNT, na.rm=TRUE)
+```
+
+```{r}
+hist(GC.df$AMOUNT, xlab = "Amount loaned")
+```
+
+# Remove the OBS column from the GC.df dataframe.
+```{r}
+GC1.df <- GC.df[ , -c(1)]
+selected.var <- c(31, 1:30)
+```
+
+
+# Perform splitting of data into training and validation sets
+```{r}
+set.seed(1)
+train.index <- sample(c(1:1000), 600)
+train.rows <- GC1.df[train.index, selected.var]
+valid.rows <- GC1.df[-train.index, selected.var]
+```
+
+# Produce a general linear model to fit a logistic regression
+```{r}
+logit.reg <- glm(RESPONSE ~., data = GC1.df, family = "binomial")
+options(scipen=999)
+summary(logit.reg)
+```
+
+# Therefore, the predictive equation with the appropriately significant variables is RESPONSE (0 or # 1) = 1.01616697 + 0.56405318 CHK_ACCT -0.02694976 DURATION + 0.40074744 HISTORY -0.00011777  AMOUNT #+ 0.24972304 SAV_ACCT -0.32146856 INSTALL_RATE + 0.54056100 MALE_SINGLE -0.62126405 OTHER_INSTALL.
+
+# Now we conduct further analysis through attempted predictions.
+```{r}
+logit.reg.pred <- predict(logit.reg, valid.rows[], type = "response")
+```
+
+```{r}
+data.frame(actual = valid.rows$RESPONSE[1:20], predicted = logit.reg.pred[1:20])
+```
+
+# It would appear that the predictive model is only 90% accurate, based on two entries being off in the wrong direction from 0.5 in predicted from the actual value.
+
+# Now, box plots of the six most important variables with regards to the RESPONSE variable are plotted.
+
+```{r}
+par(mfcol = c(1,3))
+boxplot(GC1.df$CHK_ACCT ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "CHK_ACCT")
+boxplot(GC1.df$DURATION ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "DURATION")
+boxplot(GC1.df$HISTORY ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "HISTORY")
+par(mfcol = c(1,3))
+boxplot(GC1.df$SAV_ACCT ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "SAV_ACCT")
+boxplot(GC1.df$INSTALL_RATE ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "INSTALL_RATE")
+boxplot(GC1.df$OTHER_INSTALL ~ GC1.df$RESPONSE, xlab = "RESPONSE", ylab = "OTHER_INSTALL")
+```
+
+# The results indicate that applicants with a 200 or less DMs in their checking accounts are more likely to have bad credit than those who have more than 200 DMs or who do not have a checking account.  Additionally, the duration of the loan provides a strong indicator of whether an applicant's credit rating is bad or not, with longer duration loans having greater chances of bad credit ratings.  Credit history also plays a role; those who have paid off their credits are more likely to have good credit assessment.  The amount of money in the applicant's savings account had a direct affect on the credit assessment; if the applicant had >1000 DM in their account, it was extremely likely that they had a good credit rating assessment.  Furthermore, the installment rate made a difference, with larger installment rates causing more assessments of bad credit rating.  Finally, the presence of other installments greatly affected the credit rating assessment of the applicant.
+
+# Now, we create and plot a classification tree of the German Credit data spreadsheet using evaluation of the response variable.
+
+```{r}
+library(rpart)
+library(rpart.plot)
+class.tree <- rpart(RESPONSE ~ ., data = GC.df,
+      control = rpart.control(maxdepth = 10), method = "class")
+
+# Plotting of the classification tree below.
+prp(class.tree, type=1, extra=1, split.font=2, varlen=-10)
+```
+```{r}
+# The analysis of the tree is as follows: 80% (or 240) of the bad credit applicants had 200 or less DMs in their checking account, as opposed to ~ 43% (303/700) of the good credit applicants.  If the duration of the loan was 23 months or greater, the probability of an applicant not paying back their loan increased from ~ 44% (240/543) to ~ 56.5% (134/237).  If the applicant's savings account has 1000 or less DMs, this probability increases to ~ 62% (122/196).  If the duration of the loan is 48 months or greater, in addition to the applicant's savings account having 1,000 or less DMs, the probability of an applicant not paying back their loan increases to ~ 86% (31/36).  In other words, duration has a direct effect on the likeliness of an account becoming delinquent.
+
+# Furthermore, if the duration is less than 23 months in length, the probability of an applicant paying back their loan is ~ 65% (200/306).  If the applicant has either not taken any credits or has paid back all of their credits duly, the chances increase to ~ 69% (193/278).  The OBS number has little to do with the analysis so we shall ignore that part of the tree.  If the amount of the credit is 7492 DMs or greater, there is a ~ 67% chance of the applicant paying back their loan (157/234).  At this point, it is unclear what each side of the tree means.
+```
