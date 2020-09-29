@@ -88,3 +88,8 @@ class.tree <- rpart(RESPONSE ~ ., data = GC.df,
 # Plotting of the classification tree below.
 prp(class.tree, type=1, extra=1, split.font=2, varlen=-10)
 ```
+```{r}
+# The analysis of the tree is as follows: 80% (or 240) of the bad credit applicants had 200 or less DMs in their checking account, as opposed to ~ 43% (303/700) of the good credit applicants.  If the duration of the loan was 23 months or greater, the probability of an applicant not paying back their loan increased from ~ 44% (240/543) to ~ 56.5% (134/237).  If the applicant's savings account has 1000 or less DMs, this probability increases to ~ 62% (122/196).  If the duration of the loan is 48 months or greater, in addition to the applicant's savings account having 1,000 or less DMs, the probability of an applicant not paying back their loan increases to ~ 86% (31/36).  In other words, duration has a direct effect on the likeliness of an account becoming delinquent.
+
+# Furthermore, if the duration is less than 23 months in length, the probability of an applicant paying back their loan is ~ 65% (200/306).  If the applicant has either not taken any credits or has paid back all of their credits duly, the chances increase to ~ 69% (193/278).  The OBS number has little to do with the analysis so we shall ignore that part of the tree.  If the amount of the credit is 7492 DMs or greater, there is a ~ 67% chance of the applicant paying back their loan (157/234).  At this point, it is unclear what each side of the tree means.
+```
