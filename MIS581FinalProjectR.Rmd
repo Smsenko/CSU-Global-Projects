@@ -1,0 +1,68 @@
+---
+title: "MIS581 Capstone Project Cocoa Percentage"
+author: "Sean Senko"
+date: "9/14/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+ChocolateSet <- read.csv(file = "C:/Users/Brains/Documents/R/AlphaCho.csv")
+```
+```{r}
+library(dplyr)
+Percentages <- ChocolateSet$cocoa_percent
+Ratings <- ChocolateSet$rating
+```
+```{r}
+agg <- aggregate(list(Ratings), by = list(Percentages), mean)
+agg
+```
+```{r}
+Origins <- ChocolateSet$country_of_bean_origin
+agg2 <-aggregate(list(Ratings), by = list(Origins), mean)
+agg2
+
+```
+```{r}
+input <- ChocolateSet
+result <- mean(input$rating)
+dev <- sd(input$rating)
+print(result)
+print(dev)
+```
+```{r}
+install.packages("ggplot2")
+```
+```{r}
+library("ggplot2")
+```
+```{r}
+p <- ggplot(ChocolateSet, aes(x="4", fill=Ratings)) +
+  geom_histogram(fill="white", color="black")+
+  geom_hline(aes(yintercept=result, color="green"))+
+  geom_hline(aes(yintercept=result+dev, color="green"), linetype="dashed")+
+  geom_hline(aes(yintercept=result-dev, color="green"), linetype="dashed")+
+  labs(title = "Chocolate Percentages Compared with Ratings", x="Cocoa Percentage", y="Rating")+
+  theme_classic()
+```
+```{r}
+p
+```
+
+```{r}
+#for (i in distinct_cocoa$cocoa_percent)
+{
+#  x = is.atomic(i)
+#  print(x)
+}
+```
+```{r}
+#for (i in distinct_cocoa$cocoa_percent){
+#i2 <- as.data.frame(i)
+#  MeanQuality <- mean(i2x$rating)
+#  print(MeanQuality)
+}
+```
